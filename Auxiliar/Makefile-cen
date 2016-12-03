@@ -1,0 +1,17 @@
+all: clean compile clean 
+
+compile: cenario.o 
+	@gcc -o prog cenario.o -lm -O3
+
+cenario.o:
+	@gcc -c cenario.c -lm -O3
+
+clean:
+	@find -name '*~' | xargs rm -rf {}
+	@find -name '*.o' | xargs rm -rf {}
+
+run:
+	@./prog
+
+zip:
+	zip -r prog *.c *.h Makefile-cen

@@ -1,0 +1,56 @@
+library ieee;
+use ieee.std_logic_1164.all;
+--use ieee.numeric_std.all;
+use ieee.std_logic_arith.all;
+
+entity vhsplayer_template is
+	port (
+		clk: in std_logic;
+		reset: in std_logic;
+		key_in: in std_logic_vector(7 downto 0);
+		vga_pos: out std_logic_vector(15 downto 0);
+		vga_char: out std_logic_vector(15 downto 0);
+		vga_write: out std_logic;
+		running_state: out std_logic_vector(2 downto 0)
+	);
+end vhsplayer_template;
+
+architecture behav of vhsplayer_template is
+
+signal qSecTickSig: std_logic
+
+process(clk, reset)
+		variable secCounter: unsigned(31 downto 0);
+		variable secTick: std_logic;
+		variable qSecTick: std_logic;
+	begin
+		if('1' = reset) then
+			secCounter := x"00000000";
+			secTick := '0';
+			qSecTick := '0';
+		elsif(clk'event and '1' = clk) then
+			-- Contador funciona apenas quando a variável runningState do outro processo for != 000
+			if(runningStateSig /= "000") then
+				-- qSecTick é ativado a cada 1/4 de segundo
+				if(25000 = secCounter or 50000 = secCounter or 75000 = secCounter or 100000 = secCounter) then
+					qSecTick := '1';
+				else
+					qSecTick := '0';
+				end if;
+
+				-- secTick é ativado a cada segundo
+				if(100000 = secCounter) then
+					secTick := '1';
+					secCounter := x"00000000";
+				else
+					secTick := '0';
+					secCounter := secCounter + 1;
+				end if;
+			end if;
+		end if;
+		
+		qSecTickSig <= qSecTick;
+	end process;
+	
+
+end behav;
