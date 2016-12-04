@@ -175,7 +175,7 @@ PROCESS (clk, reset)
 	IF RESET = '1' THEN
 	rand_end <= x"00";
 	COMIDAPOS  <= rand_dado;
-	COMIDAPOSA <= x"0000";
+	COMIDAPOSA <= rand_dado;
 	INDICE := 0;
 	
 		
@@ -183,32 +183,37 @@ PROCESS (clk, reset)
 
 		CASE COMIDAESTADO IS
 			WHEN x"00" =>				
-				IF FIMJOGO = '1' THEN
-					INDICE := 0;
-					
-					rand_end <= conv_std_logic_vector(INDICE, 8);
-					COMIDAPOS <= rand_dado;
-				ELSIF
-					COMIDAESTADO <= x"01";
-				END IF;			
-
-			WHEN x"01" =>
-				INDICE := (INDICE + 1) MOD 256;
+				--Estado inicial, esperando jogo iniciar
+				rand_end <= x"00";
+				COMIDAPOS  <= rand_dado;
+				COMIDAPOSA <= rand_dado;
 				
-				IF COBRAPOS(0) = COMIDAPOS THEN
-					COMIDAESTADO <= x"02";
-				ELSIF
-					COMIDAESTADO <= x"00";
+				IF FIMJOGO = '0' THEN
+					COMIDAESTADO <= x"01"
+					COMIDAPOSA  <= x"0000" -- Zerando pos anterior, faz com que seja impresso na tela a comida
 				END IF;
-
-			WHEN x"02" => --Estado que gera bolinha
+				
+			WHEN x"01" =>
+				--Estadado que aleatoriza a posiçao da comida
+				INDICE := (INDICE+1) MOD 256;
 				rand_end <= conv_std_logic_vector(INDICE, 8);
+
+				IF COMIDAPOS = COBRAPOS(0) THEN
+					COMIDAESTADO <= x"02";
+				END IF;
+				
+			WHEN x"02" => --Estado que gera posiçao da bolinha
 				COMIDAPOSA <= COMIDAPOS			
 				COMIDAPOS <= rand_dado
 
 				INDICE := (INDICE + 1) MOD 256;
 				
-				COMIDAESTADO <= x"00";				
+				IF FIMJOGO = '1' THEN
+					COMIDAESTADO <= x"00";
+				ELSIF
+					COMIDAESTADO <= x"01";
+				END IF;
+				
 			WHEN OTHERS =>
 				COMIDAESTADO <= x"00";
 		END CASE;
