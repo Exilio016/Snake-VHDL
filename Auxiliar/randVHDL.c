@@ -26,8 +26,14 @@ int main (int argc, char *argv[]){
 	//Impressão do cabeçalho
 	printf("WIDTH=16;\nDEPTH=%d;\nADDRESS_RADIX=UNS;\nDATA_RADIX=UNS;\n\nCONTENT BEGIN\n", TAM);
 
-	for(i = 0; i < TAM; i++)
-		printf("%d:%d;\n", i, rand()%1200);
+	for(i = 0; i < TAM; i++){
+		int num = rand()%1200;
+
+		while(num < 40 || num >= 1160 || num%40 == 0 || num %40 == 39)
+			num = rand()%1200;
+
+		printf("%d:%d;\n", i,num);
+	}
 
 	//Impressão do final
 	printf("END;\n");

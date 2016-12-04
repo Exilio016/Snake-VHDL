@@ -167,17 +167,50 @@ END PROCESS;
 
 -- Maquina de Estados da comida
 PROCESS (clk, reset)
+
+	VARIABLE INDICE: INTEGER;
 	
 	BEGIN
 		
 	IF RESET = '1' THEN
-
+	rand_end <= x"00";
+	COMIDAPOS  <= rand_dado;
+	COMIDAPOSA <= x"0000";
+	INDICE := 0;
+	
 		
 	ELSIF (clk'event) and (clk = '1') THEN
 
 		CASE COMIDAESTADO IS
-			WHEN x"00" =>
+			WHEN x"00" =>				
+				IF FIMJOGO = '1' THEN
+					INDICE := 0;
+					
+					rand_end <= conv_std_logic_vector(INDICE, 8);
+					COMIDAPOS <= rand_dado;
+				ELSIF
+					COMIDAESTADO <= x"01";
+				END IF;			
+
+			WHEN x"01" =>
+				INDICE := (INDICE + 1) MOD 256;
+				
+				IF COBRAPOS(0) = COMIDAPOS THEN
+					COMIDAESTADO <= x"02";
+				ELSIF
+					COMIDAESTADO <= x"00";
+				END IF;
+
+			WHEN x"02" => --Estado que gera bolinha
+				rand_end <= conv_std_logic_vector(INDICE, 8);
+				COMIDAPOSA <= COMIDAPOS			
+				COMIDAPOS <= rand_dado
+
+				INDICE := (INDICE + 1) MOD 256;
+				
+				COMIDAESTADO <= x"00";				
 			WHEN OTHERS =>
+				COMIDAESTADO <= x"00";
 		END CASE;
 	END IF;
 
