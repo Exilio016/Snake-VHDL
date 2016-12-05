@@ -54,7 +54,7 @@ int main (int argc, char *argv[]){
 	for(i = 621; i < 1160; i++){
 		printf("%d:0000",i); //cabeçalho do vec_char
 		printf("%04ld", dec2bin(3)); //cor do vec_char
-		if(i%40 == 0 || i%40 == 39)
+		if(i%40 == 38 || i%40 == 39)
 			printf("%08ld;\n", dec2bin('X')); //caracter do vec_char
 		else
 			printf("00000000;\n");
