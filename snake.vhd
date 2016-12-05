@@ -140,7 +140,9 @@ PROCESS (clk, reset)
 				END IF;
 
 			WHEN x"02" => --Estado de fim de jogo			
+				COLISAO := '0';
 				INCCOBRA <= x"01";
+				SINAL <= '0';
 				COBRAPOS(0) <= x"026C";
 				COBRAPOS(1) <= x"026B";
 				COBRAPOS(2) <= X"026A";
@@ -174,8 +176,11 @@ PROCESS (clk, reset)
 		
 	IF RESET = '1' THEN
 	rand_end <= x"00";
+	COMIDACOR <= x"5";
+	COMIDACHAR <= x"2A";
 	COMIDAPOS  <= rand_dado;
 	COMIDAPOSA <= rand_dado;
+	COMIDAESTADO <= x"00";
 	INDICE := 0;
 	
 		
@@ -189,8 +194,8 @@ PROCESS (clk, reset)
 				COMIDAPOSA <= rand_dado;
 				
 				IF FIMJOGO = '0' THEN
-					COMIDAESTADO <= x"01"
-					COMIDAPOSA  <= x"0000" -- Zerando pos anterior, faz com que seja impresso na tela a comida
+					COMIDAESTADO <= x"01";
+					COMIDAPOSA  <= x"0000"; -- Zerando pos anterior, faz com que seja impresso na tela a comida
 				END IF;
 				
 			WHEN x"01" =>
@@ -203,14 +208,14 @@ PROCESS (clk, reset)
 				END IF;
 				
 			WHEN x"02" => --Estado que gera posiçao da bolinha
-				COMIDAPOSA <= COMIDAPOS			
-				COMIDAPOS <= rand_dado
+				COMIDAPOSA <= COMIDAPOS	;		
+				COMIDAPOS <= rand_dado;
 
 				INDICE := (INDICE + 1) MOD 256;
 				
 				IF FIMJOGO = '1' THEN
 					COMIDAESTADO <= x"00";
-				ELSIF
+				ELSE
 					COMIDAESTADO <= x"01";
 				END IF;
 				
@@ -234,7 +239,7 @@ PROCESS (clk, reset)
 	
 		VIDEOE <= x"00";
 		vga_char <= cen_dado;
-		vga_pos <= x"0000";
+		vga_pos <= x"0000"; 
 		videoflag <= '0';
 		INDICE := 0;
 		

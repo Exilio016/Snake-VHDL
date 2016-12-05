@@ -30,7 +30,7 @@ int main (int argc, char *argv[]){
 	for(i = 0; i < 40; i++){
 		printf("%d:0000", i); //cabeçalho do vec_char
 		printf("%04ld", dec2bin(3)); //cor do vec_char
-		if(i == 19 | i == 20)
+		if(i == 18 | i == 19)
 			printf("%08ld;\n", dec2bin('0')); //Contador
 		else 
 			printf("%08ld;\n", dec2bin('X')); //caracter do vec_char		
