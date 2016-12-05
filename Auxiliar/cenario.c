@@ -24,7 +24,7 @@ int main (int argc, char *argv[]){
 	int i;
 
 	//Impressão do cabeçalho
-	printf("WIDTH=16;\nDEPTH=%d;\nADDRESS_RADIX=UNS;\nDATA_RADIX=UNS;\n\nCONTENT BEGIN\n", TAM);
+	printf("WIDTH=16;\nDEPTH=%d;\nADDRESS_RADIX=UNS;\nDATA_RADIX=BIN;\n\nCONTENT BEGIN\n", TAM);
 
 	//Impressão da primeira linha do monitor
 	for(i = 0; i < 40; i++){
