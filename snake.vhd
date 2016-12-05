@@ -47,7 +47,11 @@ ARCHITECTURE a OF snake IS
 	SIGNAL VIDEOE       : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 	--Sinais de controle
-	SIGNAL FIMJOGO : STD_LOGIC;
+	SIGNAL FIMJOGO   : STD_LOGIC;
+	SIGNAL CONTOU : STD_LOGIC;
+	
+	SIGNAL CONTADORE : STD_LOGIC_VECTOR(7 DOWNTO 0);
+	SIGNAL CONTADOR  : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 BEGIN
 
@@ -55,6 +59,7 @@ BEGIN
 PROCESS (clk, reset)
 
 	VARIABLE COLISAO : STD_LOGIC;
+	VARIABLE COMIDA : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	
 	BEGIN
 		
@@ -66,6 +71,7 @@ PROCESS (clk, reset)
 		COBRAPOS(0) <= x"026C";
 		COBRAPOS(1) <= x"026B";
 		COBRAPOS(2) <= X"026A";
+		CONTADOR <= x"00";
 		
 		COBRAESTADO <= x"02";
 		COLISAO := '0';
@@ -79,30 +85,38 @@ PROCESS (clk, reset)
 			
 				CASE key IS
 					WHEN x"73" => -- (S) BAIXO
-						IF (COBRAPOS(0) < 1159) THEN   -- nao esta' na ultima linha
-							INCCOBRA <= x"28";
-							SINAL <= '0';
+						IF (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 39) AND (COBRAPOS(0) < 1159) AND (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 0)) AND (COBRAPOS(0) > 39)) THEN   -- nao esta' na ultima linha
+							IF INCCOBRA /= x"28" THEN
+								INCCOBRA <= x"28";
+								SINAL <= '0';
+							END IF;							
 						ELSE
 							COLISAO := '1';
 						END IF;
 					WHEN x"77" => -- (W) CIMA
-						IF (COBRAPOS(0) > 39) THEN   -- nao esta' na primeira linha
-							INCCOBRA <= x"28";
-							SINAL <= '1';
+						IF (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 39) AND (COBRAPOS(0) < 1159) AND (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 0)) AND (COBRAPOS(0) > 39)) THEN   -- nao esta' na primeira linha
+							IF INCCOBRA /= x"28" THEN
+								INCCOBRA <= x"28";
+								SINAL <= '1';
+							END IF;
 						ELSE
 							COLISAO := '1';
 						END IF;
 					WHEN x"61" => -- (A) ESQUERDA
-						IF (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 0)) THEN   -- nao esta' na extrema esquerda
-							INCCOBRA <= x"01";
-							SINAL <= '1';
+						IF (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 39) AND (COBRAPOS(0) < 1159) AND (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 0)) AND (COBRAPOS(0) > 39)) THEN   -- nao esta' na extrema esquerda
+							IF INCCOBRA /= x"01" THEN
+								INCCOBRA <= x"01";
+								SINAL <= '1';
+							END IF;
 						ELSE
 							COLISAO := '1';
 						END IF;					
 						WHEN x"64" => -- (D) DIREITA
-						IF (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 39)) THEN   -- nao esta' na extrema direita
-							INCCOBRA <= x"01";
-							SINAL <= '0';
+						IF (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 39) AND (COBRAPOS(0) < 1159) AND (NOT((conv_integer(COBRAPOS(0)) MOD 40) = 0)) AND (COBRAPOS(0) > 39)) THEN   -- nao esta' na extrema direita
+							IF INCCOBRA /= x"01" THEN	
+								INCCOBRA <= x"01";
+								SINAL <= '0';
+							END IF;
 						ELSE
 							COLISAO := '1';
 						END IF;
@@ -121,6 +135,12 @@ PROCESS (clk, reset)
 				IF (SINAL = '0') THEN COBRAPOS(0) <= COBRAPOS(0) + INCCOBRA;
 				ELSE COBRAPOS(0) <= COBRAPOS(0) - INCCOBRA;
 				END IF;
+								
+				IF ((COBRAPOS(0) = COMIDAPOSA)  AND (CONTOU = '0')) THEN
+					CONTADOR <= CONTADOR + x"01";
+					CONTOU <= '1';
+					COMIDA := COMIDAPOSA;
+				END IF;
 									
 				IF COLISAO = '0' THEN
 					COBRAESTADO <= x"01";
@@ -138,9 +158,14 @@ PROCESS (clk, reset)
 				ELSE
 					DELAY1 <= DELAY1 + x"01";
 				END IF;
+				
+				IF COMIDA /= COMIDAPOSA THEN
+					CONTOU <= '0';
+				END IF;
 
 			WHEN x"02" => --Estado de fim de jogo			
 				COLISAO := '0';
+				CONTADOR <= x"00";
 				INCCOBRA <= x"01";
 				SINAL <= '0';
 				COBRAPOS(0) <= x"026C";
@@ -192,7 +217,7 @@ PROCESS (clk, reset)
 				rand_end <= x"00";
 				COMIDAPOS  <= rand_dado;
 				COMIDAPOSA <= rand_dado;
-				
+								
 				IF FIMJOGO = '0' THEN
 					COMIDAESTADO <= x"01";
 					COMIDAPOSA  <= x"0000"; -- Zerando pos anterior, faz com que seja impresso na tela a comida
@@ -207,7 +232,7 @@ PROCESS (clk, reset)
 					COMIDAESTADO <= x"02";
 				END IF;
 				
-			WHEN x"02" => --Estado que gera posiçao da bolinha
+			WHEN x"02" => --Estado que gera posiçao da comida
 				COMIDAPOSA <= COMIDAPOS	;		
 				COMIDAPOS <= rand_dado;
 
@@ -256,7 +281,7 @@ PROCESS (clk, reset)
 					videoflag <= '1';
 				
 					INDICE := ((INDICE + 1) MOD 1200);
-					VIDEOE <= x"08";
+					VIDEOE <= x"0C";
 					
 					IF INDICE = 1200 THEN
 						FIMCENARIO := '1';
@@ -271,7 +296,7 @@ PROCESS (clk, reset)
 				FIMCENARIO := '0';
 
 				IF(COBRAPOSA = COBRAPOS(2)) THEN
-					VIDEOE <= x"03";
+					VIDEOE <= x"04";
 				ELSE
 					vga_char(15 downto 12) <= "0000";
 					vga_char(11 downto 8) <= "0000";
@@ -289,7 +314,7 @@ PROCESS (clk, reset)
 			
 			WHEN x"02" => -- Desenha cabeça
 				IF(COBRAPOSA = COBRAPOS(2)) THEN
-					VIDEOE <= x"03";
+					VIDEOE <= x"04";
 				ELSE
 					vga_char(15 downto 12) <= "0000";
 					vga_char(11 downto 8) <= COBRACOR;
@@ -325,7 +350,7 @@ PROCESS (clk, reset)
 
 			WHEN x"04" => -- Desenha comida
 				IF(COMIDAPOSA = COMIDAPOS) THEN
-					VIDEOE <= x"00";
+					VIDEOE <= x"09";
 				ELSE
 					vga_char(15 downto 12) <= "0000";
 					vga_char(11 downto 8) <= COMIDACOR;
@@ -339,7 +364,36 @@ PROCESS (clk, reset)
 		
 			WHEN x"08" => --Abaixa o flag
 				videoflag <= '0';
+				VIDEOE <= x"09";
+				
+			WHEN x"09" => --Imprime contador (unidade)
+					vga_char(15 downto 12) <= "0000";
+					vga_char(11 downto 8) <= COMIDACOR;
+					vga_char(7 downto 0) <= x"30" + conv_std_logic_vector( conv_integer(CONTADOR) MOD 10, 8);
+					
+					vga_pos(15 downto 0)	<= x"0014";
+					
+					videoflag <= '1';
+					VIDEOE <= x"0A";
+				
+			WHEN x"0A" => --Abaixa o flag
+				videoflag <= '0';
+				VIDEOE <= x"0B";
+				
+			WHEN x"0B" => --Imprime contador (Dezena)
+					vga_char(15 downto 12) <= "0000";
+					vga_char(11 downto 8) <= COMIDACOR;
+					vga_char(7 downto 0) <= x"30" + conv_std_logic_vector( conv_integer(CONTADOR) / 10, 8);
+					
+					vga_pos(15 downto 0)	<= x"0013";
+					
+					videoflag <= '1';
+					VIDEOE <= x"0C";
+						
+			WHEN x"0C" => --Abaixa o flag
+				videoflag <= '0';
 				VIDEOE <= x"00";
+			
 	
 			WHEN OTHERS =>
 				videoflag <= '0';
